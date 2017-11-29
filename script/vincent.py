@@ -16,25 +16,6 @@ from bokeh.models import HoverTool
 from photutils import Background2D, SigmaClip, MedianBackground
 from skimage.color import label2rgb
 
-'''
-def size_bf_stitched(image, tiles = 81):
-    #Find size of images before stitching to calculate flat field
-    y, x = image.shape
-    area = (x*y)/tiles
-    x_bf = np.int(np.sqrt(area/(y/x)))
-    y_bf = np.int(x_bf*(y/x))
-    block = util.view_as_blocks(im, block_shape = (y_bf, x_bf))
-    return block
-
-
-def flat_field(image):
-    img_average = np.mean(image, axis = 0).astype('uint16')
-    img_ave_median = filters.median(img_average, morphology.disk(200))
-    M = np.mean(image)
-    flat_img = np.divide(image, img_ave_median[np.newaxis, :,:])*M
-    return flat_img.astype(image.dtype)
-
-'''
 
 def crop_show(image, size = 7000, save = False):
     x, y = image.shape
@@ -173,49 +154,6 @@ def data_panda(property_lst):
 
     return(pd.DataFrame(data))
 
-def heat_map(labeled_img, props, lst_result):
-    new_labels = labeled_img.copy()
-    for new, region in zip(lst_result, props):
-        new_labels[tuple(region.coords.T)] = new
-    return(new_labels)
-
-
-def roi_to_exclude(img):
-    scale = 8
-    img = img[::scale,::scale]
-    img= exposure.equalize_adapthist(img, clip_limit=0.07)
-    def view_image(image, height, width, x_pos, y_pos):
-        fig, ax = plt.subplots(figsize=(12,12))
-        ax.imshow(image, vmin = image.min()*5, vmax = image.max()/2)
-        rectangle = plt.Rectangle((x_pos, y_pos), width = width, height = height, color='r', alpha = 0.5)
-        ax.add_artist(rectangle)
-        plt.show()
-        start = (y_pos*scale, x_pos*scale)
-        end = ((y_pos*scale)+(height*scale), (x_pos*scale)+(width*scale))
-        return(start, end)
-    w = interactive(view_image, image=fixed(img), height=(0,img.shape[0]) ,
-                    width=(0,img.shape[1]), y_pos =(0,img.shape[1]), x_pos=(0,img.shape[0]))
-    return(w)
-
-def new_label(w, labeled_img, int_img):
-    start, end = w.result
-    xx, yy = np.meshgrid(np.arange(start[0],end[0]), np.arange(start[1],end[1]))
-    new_labeled_img = np.copy(labeled_img)
-    new_labeled_img[xx, yy] = 0
-
-    props = measure.regionprops(new_labeled_img,
-        intensity_image=int_img[0:new_labeled_img.shape[0],
-        0:new_labeled_img.shape[1]])
-
-    circularity = [prop.eccentricity for prop in props]
-
-    new_labels = new_labeled_img.copy()
-    for circ, prop in zip(circularity, props):
-        if circ >=0.7:
-            new_labels[tuple(prop.coords.T)] = 0
-        else:
-            new_labels[tuple(prop.coords.T)] = prop.label
-    return(new_labels)
 
 def new_label_holo(liste, labeled_img, int_img):
 
@@ -249,10 +187,6 @@ def prop_lab(labeled_img):
             "y": data[:,1],
             "empty": data[:,2]}
     return data
-
-#def record_region(bounds):
-
-#    return label.select(x=(bounds[0], bounds[2]),y=(bounds[1], bounds[3]))
 
 
 def equaliz(FAM_cropped):
