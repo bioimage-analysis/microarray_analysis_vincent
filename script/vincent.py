@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from photutils import Background2D, SigmaClip, MedianBackground
+from photutils import Background2D, MedianBackground
+from astropy.stats import SigmaClip
 from skimage.transform import hough_circle, hough_circle_peaks
 from skimage.feature import canny
 from skimage.draw import circle_perimeter
@@ -13,7 +14,6 @@ import holoviews as hv
 import holoviews.util
 from holoviews import streams
 from bokeh.models import HoverTool
-from photutils import Background2D, SigmaClip, MedianBackground
 from skimage.color import label2rgb
 
 
@@ -23,10 +23,8 @@ def crop_show(image, size = 7000, save = False):
     y_crop = np.int((y-size)/2)
 
 
-    img_adapteq = exposure.equalize_adapthist(image, clip_limit=0.07)
-
     fig, ax = plt.subplots(figsize=(12,12))
-    ax.imshow(img_adapteq)
+    ax.imshow(image)
     ax.plot([y_crop,y_crop+size],[x_crop,x_crop], [y_crop,y_crop],[x_crop,x_crop+size],
               [y_crop,y_crop+size],[x_crop+size,x_crop+size], [y_crop+size,y_crop+size],[x_crop,x_crop+size],
               'k-', color='r')
@@ -191,10 +189,11 @@ def prop_lab(labeled_img):
 
 def equaliz(FAM_cropped):
     # Need to crop a little more after stitching
-    FAM_cropped_n = FAM_cropped[0:6530, 0:6500]
-    to_show_FAM = FAM_cropped_n[::-1]
-    equal = exposure.equalize_adapthist(to_show_FAM, clip_limit=0.07)
-    return equal, FAM_cropped_n
+	FAM_cropped_n = FAM_cropped[0:6530, 0:6500]
+	to_show_FAM = FAM_cropped_n[::-1]
+	p2, p98 = np.percentile(to_show_FAM, (2, 98))
+	equal = exposure.rescale_intensity(to_show_FAM, in_range=(p2, p98))
+	return equal, FAM_cropped_n
 
 def to_ROI(to_show_FAM, data):
     hv.output(size=200)

@@ -15,10 +15,19 @@ MicroArray Analysis Vincent Dufour-Decieux - Shan X. Wang's lab
 ```
 source activate name_env
 ```
-4- Install files in the requirements.txt :
+4- Install the depencies :
 
 ```
-pip install -r requirements.txt
+conda install -c astropy photutils
+conda install -c ioam holoviews bokeh
+conda install scikit-image==0.13.0
+conda install pandas==0.20.3
+conda install tifffile -c conda-forge
+```
+The following step is necessary in some computers:
+```
+pip uninstall Pillow
+pip install Pillow
 ```
 
 ## Usage
